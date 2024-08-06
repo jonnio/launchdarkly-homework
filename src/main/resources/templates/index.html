@@ -11,18 +11,27 @@
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
 
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type="importmap">
+        {
+          "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+          }
+        }
+    </script>
+
     <title>LD Homework - Osborn</title>
 </head>
 <body>
+
+
 <div class="container-fluid">
     <div id="app">{{ msg }}</div>
     <div>[[${ message }]]</div>
 </div>
 
 
-<script>
-    const {createApp, ref} = Vue
+<script type="module">
+    import { createApp, ref } from 'vue'
 
     createApp({
         setup() {
