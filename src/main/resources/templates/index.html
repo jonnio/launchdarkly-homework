@@ -1,5 +1,7 @@
 <!doctype html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="light"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -36,13 +38,37 @@
     <title>LD Homework - Osborn</title>
 </head>
 <body>
-<div class="container-fluid">
-    <nav class="navbar navbar-expand-lg">
-        <a class="navbar-brand" href="#">Osborn LD Homework</a>
-    </nav>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Osborn LD Solution</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse " id="navbarNavAltMarkup">
+            <!-- ml-auto still works just fine-->
+            <div class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <a class="nav-link active text-nowrap" aria-current="page" href="#">
+                    <div class="text-nowrap">
+                        <span>Hello</span>
+                        <span sec:authentication="principal.firstName"></span>
+                        <span class="fw-lighter">(<span sec:authentication="principal.emailAddress"></span>)</span>
+                    </div>
+                </a>
+                <a sec:authorize="isAuthenticated()" class="nav-link" href="logout" tabindex="-1" aria-disabled="true">Logout</a>
+                <a sec:authorize="!isAuthenticated()" class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
 
+<div class="container-fluid">
     <h3>Olympic Results</h3>
     <p>See the results for each competition since 1896</p>
+    <div th:text="${#authorization}"></div>
+    <div th:text="${#authentication}"></div>
+    <div th:text="${#authority}"></div>
+    <div th:text="${#authentication?.principal}"></div>
     <div id="app">
 
         <div id="medal-table" class="table table-light"></div>
@@ -54,31 +80,29 @@
 
     import {createApp, ref} from 'vue';
     import {TabulatorFull as Tabulator} from 'tabulator';
-    import {LDPlugin, useLDFlag, useLDReady} from 'ld';
+    import {LDPlugin, useLDFlag, useLDReady, ldInit} from 'ld';
 
-    import {ldInit, useLDFlag} from 'launchdarkly-vue-client-sdk'
-
-    // Set clientSideID to your LaunchDarkly client-side ID
-    const clientSideID = '66b36d56cd98fb104ad0ad8b'
-
-    // Set up the context properties. This context should appear on your LaunchDarkly
-    // contexts dashboard soon after you run the demo.
-    const context = {kind: 'user', key: 'feature-olympic-pagination', name: 'Joseph'}
-
-    // Set featureFlagKey to the feature flag key you want to evaluate
-    const featureFlagKey = 'feature-olympic-pagination'
-
-    if (!clientSideID) {
-        console.warn('Please edit App.vue to set clientSideID to your LaunchDarkly client-side ID')
-    }
-    const [ldReady] = ldInit({clientSideID, context})
-    const flagValue = useLDFlag(featureFlagKey, false)
+    // // Set clientSideID to your LaunchDarkly client-side ID
+    // const clientSideID = '66b36d56cd98fb104ad0ad8b'
+    //
+    // // Set up the context properties. This context should appear on your LaunchDarkly
+    // // contexts dashboard soon after you run the demo.
+    // const context = {kind: 'user', key: 'feature-olympic-pagination', name: 'Joseph'}
+    //
+    // // Set featureFlagKey to the feature flag key you want to evaluate
+    // const featureFlagKey = 'feature-olympic-pagination'
+    //
+    // if (!clientSideID) {
+    //     console.warn('Please edit App.vue to set clientSideID to your LaunchDarkly client-side ID')
+    // }
+    // const [ldReady] = ldInit({clientSideID, context})
+    // const flagValue = useLDFlag(featureFlagKey, false)
 
 
     const instance = axios.create({
         baseURL: '/api/olympics/',
         timeout: 1000,
-        headers: {'Authorization': `Bearer ABCDEF`}
+        withCredentials: true,
     });
 
     createApp({
@@ -95,7 +119,7 @@
         },
         mounted() {
             // use LD here
-            let version = 1
+            let version = 2
             if (version === 1) {
                 let table = new Tabulator("#medal-table", {
                     height: 650,
