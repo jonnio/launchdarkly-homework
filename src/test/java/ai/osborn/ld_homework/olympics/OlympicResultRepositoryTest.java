@@ -7,20 +7,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class ResultRepositoryTest {
+class OlympicResultRepositoryTest {
 
     @Autowired
-    ResultRepository resultRepository;
+    OlympicResultRepository olympicResultRepository;
 
     @Test
     public void testGetByMedal() {
-        var results = resultRepository.getAllByMedal("Gold");
+        var results = olympicResultRepository.getAllByMedal("Gold");
         assertNotNull(results);
         assertFalse(results.isEmpty());
     }
 
     @Test
     public void testCountByMedal() {
-        assertTrue(resultRepository.countByMedal("Gold") > 0);
+        assertTrue(olympicResultRepository.countByMedal("Gold") > 0);
     }
 }

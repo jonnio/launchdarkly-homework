@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -14,14 +14,24 @@
     <script type="importmap">
         {
           "imports": {
-            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+            "axios": "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js",
+            "tabulator": "https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator_esm.min.js"
           }
         }
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
+
+<!--    <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator.min.css" rel="stylesheet">-->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.5/css/tabulator_bootstrap5.min.css"
+          integrity="sha512-qDEgvDbdp7tq+ytU/OgCzWfvbfdEe3pv0yEOMz/gurMcR0BWNgIF6I4VKeoACEj5E5PFf1uo3Vzuwk/ga9zeUg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <title>LD Homework - Osborn</title>
 </head>
@@ -40,46 +50,74 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Link</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                       data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Dropdown
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
-                </li>
             </ul>
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Search</button>
-            </form>
         </div>
     </nav>
-    <!--<div class="container">-->
 
-    <div id="app">{{ msg }}</div>
-    <div>[[${ message }]]</div>
-    <!--</div>-->
+    <h3>Olympic Results</h3>
+    <p>See the results for each competition since 1896</p>
+    <div id="app">
+
+        <div id="medal-table" class="table table-striped table-light"></div>
+
+    </div>
 
 </div>
 <script type="module">
-    import {createApp, ref} from 'vue'
+
+    import {createApp, ref} from 'vue';
+    import {TabulatorFull as Tabulator} from 'tabulator';
+
+    const instance = axios.create({
+        baseURL: '/api/olympics/',
+        timeout: 1000,
+        headers: {'Authorization': `Bearer ABCDEF`}
+    });
 
     createApp({
         setup() {
             const msg = ref('Hello vue & [[${ message }]]')
+            console.log(axios)
             return {
                 msg
             }
+        },
+        data() {
+            return {
+                items: []
+            };
+        },
+        mounted() {
+            let table = new Tabulator("#medal-table", {
+                height: 650,
+                data: this.items,
+                layout: "fitColumns",
+                pagination: true,
+                columns: [
+                    {title: "Year", field: "olympicYear", width: 150},
+                    {title: "City", field: "city", hozAlign: "left"},
+                    {title: "Sport", field: "sport"},
+                    {title: "Discipline", field: "discipline"},
+                    {title: "Athlete", field: "athlete"},
+                    {title: "Country", field: "country"},
+                    {title: "Gender", field: "gender"},
+                    {title: "Event", field: "event"},
+                    {title: "Medal", field: "medal"},
+                ],
+            });
+            instance
+                .get('/results')
+                .then(response => {
+                    this.items = response.data;
+                    table.setData(response.data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
         }
-    }).mount('#app')
+    }).mount('#app');
+
+
 </script>
 
 </body>
