@@ -27,38 +27,24 @@
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
 
-<!--    <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator.min.css" rel="stylesheet">-->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.5/css/tabulator_bootstrap5.min.css"
           integrity="sha512-qDEgvDbdp7tq+ytU/OgCzWfvbfdEe3pv0yEOMz/gurMcR0BWNgIF6I4VKeoACEj5E5PFf1uo3Vzuwk/ga9zeUg=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
 
     <title>LD Homework - Osborn</title>
 </head>
 <body>
 <div class="container-fluid">
-    <nav class="navbar navbar-expand-lg"> <!-- navbar-light bg-light-->
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                </li>
-            </ul>
-        </div>
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">Osborn LD Homework</a>
     </nav>
 
     <h3>Olympic Results</h3>
     <p>See the results for each competition since 1896</p>
     <div id="app">
 
-        <div id="medal-table" class="table table-striped table-light"></div>
+        <div id="medal-table" class="table table-light"></div>
 
     </div>
 
@@ -88,32 +74,62 @@
             };
         },
         mounted() {
-            let table = new Tabulator("#medal-table", {
-                height: 650,
-                data: this.items,
-                layout: "fitColumns",
-                pagination: true,
-                columns: [
-                    {title: "Year", field: "olympicYear", width: 150},
-                    {title: "City", field: "city", hozAlign: "left"},
-                    {title: "Sport", field: "sport"},
-                    {title: "Discipline", field: "discipline"},
-                    {title: "Athlete", field: "athlete"},
-                    {title: "Country", field: "country"},
-                    {title: "Gender", field: "gender"},
-                    {title: "Event", field: "event"},
-                    {title: "Medal", field: "medal"},
-                ],
-            });
-            instance
-                .get('/results')
-                .then(response => {
-                    this.items = response.data;
-                    table.setData(response.data);
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
+            // use LD here
+            let version = 1
+            if (version === 1 ){
+                let table = new Tabulator("#medal-table", {
+                    height: 650,
+                    layout: "fitColumns",
+                    pagination: false,
+                    columns: [
+                        {title: "Year", field: "olympicYear", width: 150, sorter: "number"},
+                        {title: "City", field: "city"},
+                        {title: "Sport", field: "sport"},
+                        {title: "Discipline", field: "discipline"},
+                        {title: "Athlete", field: "athlete"},
+                        {title: "Country", field: "country"},
+                        {title: "Gender", field: "gender"},
+                        {title: "Event", field: "event"},
+                        {title: "Medal", field: "medal"},
+                    ],
                 });
+                instance
+                    .get('/results')
+                    .then(response => {
+                        //this.items = response.data;
+                        table.setData(response.data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                    });
+            } else if (version === 2 ) {
+                let table = new Tabulator("#medal-table", {
+                    height: 650,
+                    layout: "fitColumns",
+                    pagination: true,
+                    paginationMode: "remote",
+                    sortMode: "remote",
+                    ajaxURL: "/api/olympics/paged/results",
+                    dataReceiveParams: {
+                        "last_page": "totalPages",
+                        "data": "content",
+                    },
+                    ajaxURLGenerator: function (url, config, params) {
+                        return url + "?params=" + encodeURI(JSON.stringify(params)); //encode parameters as a json object
+                    },
+                    columns: [
+                        {title: "Year", field: "olympicYear", width: 150, sorter: "number"},
+                        {title: "City", field: "city"},
+                        {title: "Sport", field: "sport"},
+                        {title: "Discipline", field: "discipline"},
+                        {title: "Athlete", field: "athlete"},
+                        {title: "Country", field: "country"},
+                        {title: "Gender", field: "gender"},
+                        {title: "Event", field: "event"},
+                        {title: "Medal", field: "medal"},
+                    ],
+                });
+            }
         }
     }).mount('#app');
 
