@@ -134,6 +134,11 @@ ldcli config --set access-token api-c66f6280-cda1-4149-9c44-6db333b9ac15
 ```
 The token presented here will be removed after the evaluation period.
 
+The _feature flag_ used here can be queried with the CLI (pipe to `jq` for formatting in `iTerm2`):
+```shell
+ldcli flags get --project default --env production --flag feature-olympic-pagination | jq
+```
+
 ## Part 1: Release and Remediate
 * Make sure the flag `feature-olympic-pagination` is disabled
 * [Login](http://localhost:8080) to the application using the user `samone`. The user will be presented with a table of medals that has scrolling but no pagination. A user can simply sort by a column and scroll. 
