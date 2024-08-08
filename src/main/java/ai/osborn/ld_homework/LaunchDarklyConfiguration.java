@@ -3,9 +3,12 @@ package ai.osborn.ld_homework;
 
 import com.launchdarkly.sdk.ContextKind;
 import com.launchdarkly.sdk.LDContext;
+import com.launchdarkly.sdk.LDValue;
 import com.launchdarkly.sdk.server.LDClient;
 import lombok.Builder;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +21,16 @@ import java.security.Principal;
 @Configuration
 public class LaunchDarklyConfiguration {
 
+    private static final Logger log = LoggerFactory.getLogger(LaunchDarklyConfiguration.class);
+
     @Bean
     LDClient getLaunchDarklyClient(@Value("${launchdarkly.sdk-key}") String key) {
-        return new LDClient(key);
+        var client = new LDClient(key);
+        // track flag changes here for logging
+        client.getFlagTracker().addFlagChangeListener(event -> {
+            log.info("Flag {} has changed", event.getKey());
+        });
+        return client;
     }
 
     public static LDContext toLDContext(Principal principal) {
@@ -33,6 +43,7 @@ public class LaunchDarklyConfiguration {
                 .set("email", user.getEmailAddress())
                 .set("firstName", user.getFirstName())
                 .set("lastName", user.getLastName())
+                .set("groups", LDValue.arrayOf(user.getAuthorities().stream().map(g -> LDValue.of(g.getAuthority())).toArray(LDValue[]::new)))
                 .kind(ContextKind.DEFAULT)
                 .build();
     }

@@ -45,6 +45,18 @@ public class SecurityConfiguration {
                     "samone",
                     bCryptPasswordEncoder().encode("gold"),
                     List.of("USER", "QA_TESTER"), List.of("EMPLOYEE_LD")));
+            add(new WebsiteUser("cmarks@tahiti.com",
+                    "Caroline",
+                    "Marks",
+                    "surfer",
+                    bCryptPasswordEncoder().encode("gold"),
+                    List.of("USER", "QA_TESTER"), List.of("CONTRACTOR")));
+            add(new WebsiteUser("vincent@skeet.com",
+                    "Vincent",
+                    "Hancock",
+                    "skeet",
+                    bCryptPasswordEncoder().encode("gold"),
+                    List.of("USER"), List.of("EMPLOYEE_SKEET")));
         }};
         return new InMemoryWebsiteUserDetailsManager(userList.toArray(new WebsiteUser[0]));
     }
