@@ -10,6 +10,7 @@ LD sample project to demonstrate some capabilities, complete the assignment, and
 - [Using the App](#using-the-app)
   - [Local Configuration](#configuration)
   - [Run the Application](#run-the-application)
+  - [Notes](#environment-notes)
 - [Technical Exercises](#technical-exercises)
   - [Part 1: Release and Remediate](#part-1-release-and-remediate)
   - [Part 2: Target](#part-2-target)
@@ -119,6 +120,12 @@ Navigate to [http://localhost:8080/](http://localhost:8080/) to login.
 
 Click the `Logout` link in the upper right of the menu to [logout](http://localhost:8080/logout) of the application and change users.
 
+### Environment Notes
+* I used only the `proudction` environment per the instructions
+* I did the configuration manually on the webpage but did experiment with doing it from a shell script
+* Testing automation should be enabled
+* I did _not_ have time to set up a `cypress` test suite for testing automation
+
 # Technical Exercises
 The technical exercises will require logging in as different users. It will also require the use of the `ldcli` to
 turn a flag on and off. Configure the `ldcli` using the command line:
@@ -158,9 +165,8 @@ A rule is configured such that any user with the role `QA_TESTER` will have pagi
 
 ### Extra Credit: Experimentation
 I've added an experiment that tracks the clicks on the pagination buttons. The experiment uses a css filter to
-track clicks on the buttons. Some sample results are here:
+track clicks on the buttons. Some sample results are in this screen shot:
 ![image](src/main/resources/static/experiment.png)
-
 
 ### Extra Credit: Integrations
 I created an integration between `LaunchDarkly` and my `GCP` account via `pub/sub` to store the events for
