@@ -113,9 +113,11 @@ we can easily start it using the gradle plugin that is already configured.
 ```shell
 ./gradlew clean bootRun
 ```
+
+### Login and Logout
 Navigate to [http://localhost:8080/](http://localhost:8080/) to login.
 
-
+Click the `Logout` link in the upper right of the menu to [logout](http://localhost:8080/logout) of the application and change users.
 
 # Technical Exercises
 The technical exercises will require logging in as different users. It will also require the use of the `ldcli` to
@@ -138,7 +140,6 @@ ldcli flags --project default --environment production --flag feature-olympic-pa
 * Checkout the code for the client listener on line 185 in [index.html](src/main/resources/templates/index.html)
 * Checkout the code for the server listener on line 30 in [LaunchDarklyConfiguration.java](src/main/java/ai/osborn/ld_homework/LaunchDarklyConfiguration.java). The server listener simply logs the event.
 
-
 ## Part 2: Target
 Utilize the individual and rule based targeting by logging in as individual people.
 Make sure the flag is enabled:
@@ -146,14 +147,14 @@ Make sure the flag is enabled:
 ldcli flags --project default --environment production --flag feature-olympic-pagination toggle-on |jq -r '{name, kind, key, on: .environments.production.on}'
 ```
 ### Individual Targeting
-The user `jojo` will not see the pagination. A target is configured so the user `skeet` sees pagination. 
-* Login as `jojo` and see that the pagination is not enabled
-* Login as `skeet` and see that pagination is enabled
+The user `jojo` will not have pagination. A target is configured so the user `skeet` does have pagination. 
+* [Login](http://localhost:8080) as `jojo` and see that the pagination is not available 
+* [Login](http://localhost:8080) as `skeet` and see that pagination is enabled
 
 ### Rule Targeting
 A rule is configured such that any user with the role `QA_TESTER` will have pagination enabled.
-* Login as `surfer` or `samone` to see the pagination
-* Login as `jojo` to see that pagination is not enabled
+* [Login](http://localhost:8080) as `surfer` or `samone` to see the pagination ([logout](http://localhost:8080/logout))
+* [Login](http://localhost:8080) as `jojo` to see that pagination is not enabled ([logout](http://localhost:8080/logout))
 
 ### Extra Credit: Experimentation
 I've added an experiment that tracks the clicks on the pagination buttons. The experiment uses a css filter to
@@ -162,8 +163,6 @@ track clicks on the buttons. Some sample results are here:
 
 
 ### Extra Credit: Integrations
-I setup an integration between `LaunchDarkly` and my `GCP` account via `pub/sub` to store the events for
-future analytics and reporting.
-
-
+I created an integration between `LaunchDarkly` and my `GCP` account via `pub/sub` to store the events for
+future analytics and reporting. (screenshot pending enablement of integrations)
 
