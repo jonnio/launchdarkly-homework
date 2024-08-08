@@ -64,7 +64,7 @@
     <h3>Olympic Results</h3>
     <p>See the results for each competition since 1896</p>
 
-    <div id="app">
+    <div id="app" class="mx-4">
 
         <div id="medal-table" class="table table-light"></div>
 
@@ -149,7 +149,7 @@
                             return url + "?params=" + encodeURI(JSON.stringify(params)); //encode parameters as a json object
                         },
                         columns: [
-                            {title: "Year", field: "olympicYear", width: 150, sorter: "number"},
+                            {title: "Year", field: "olympicYear", sorter: "number"},
                             {title: "City", field: "city"},
                             {title: "Sport", field: "sport"},
                             {title: "Discipline", field: "discipline"},
@@ -157,10 +157,21 @@
                             {title: "Country", field: "country"},
                             {title: "Gender", field: "gender"},
                             {title: "Event", field: "event"},
-                            {title: "Medal", field: "medal"},
+                            {
+                                title: "Medal",
+                                field: "medal",
+                                hozAlign: "center",
+                                headerHozAlign:"center",
+                                width: 112,
+                                formatter: "image", formatterParams: {
+                                    height: "22px",
+                                    urlPrefix: "/",
+                                    urlSuffix: ".png",
+                                }
+                            },
                         ],
                     });
-                    table.on("pageLoaded", function(pageno){
+                    table.on("pageLoaded", function (pageno) {
                         console.log('paged to page #', pageno);
                     });
                 }
