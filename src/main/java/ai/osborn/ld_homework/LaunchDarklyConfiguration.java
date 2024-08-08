@@ -29,8 +29,10 @@ public class LaunchDarklyConfiguration {
         Assert.isInstanceOf(SecurityConfiguration.WebsiteUser.class, token.getPrincipal());
         var user = (SecurityConfiguration.WebsiteUser) token.getPrincipal();
         return LDContext.builder(user.getEmailAddress())
-                .name(user.getFirstName())
+                .name(user.getUsername())
                 .set("email", user.getEmailAddress())
+                .set("firstName", user.getFirstName())
+                .set("lastName", user.getLastName())
                 .kind(ContextKind.DEFAULT)
                 .build();
     }
@@ -46,6 +48,7 @@ public class LaunchDarklyConfiguration {
                 .key(user.getEmailAddress())
                 .email(user.getEmailAddress())
                 .firstName(user.getFirstName())
+                .lastName(user.getLastName())
                 .groups(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(String[]::new))
                 .build();
     }

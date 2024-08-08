@@ -35,16 +35,16 @@ public class SecurityConfiguration {
         var userList = new ArrayList<WebsiteUser>() {{
             add(new WebsiteUser("joseph@belltracy.com",
                     "Joseph",
+                    "Hunter",
                     "jojo",
-                    bCryptPasswordEncoder().encode("1234"),
-                    List.of("USER"),
-                    List.of("PHASE_A", "CUSTOMER_AMAZON.COM")));
+                    bCryptPasswordEncoder().encode("gold"),
+                    List.of("USER"), List.of("PHASE_A", "CUSTOMER_AMAZON.COM")));
             add(new WebsiteUser("samone@launchdarkly.com",
                     "Samone",
+                    "Biles",
                     "samone",
-                    bCryptPasswordEncoder().encode("1234"),
-                    List.of("USER", "QA_TESTER"),
-                    List.of("EMPLOYEE_LD")));
+                    bCryptPasswordEncoder().encode("gold"),
+                    List.of("USER", "QA_TESTER"), List.of("EMPLOYEE_LD")));
         }};
         return new InMemoryWebsiteUserDetailsManager(userList.toArray(new WebsiteUser[0]));
     }
@@ -67,19 +67,22 @@ public class SecurityConfiguration {
         private final String emailAddress;
         @Getter
         private final String firstName;
+        @Getter
+        private final String lastName;
         private final String userName;
         private final String password;
         private final Set<GrantedAuthority> authorities;
         private final Set<GrantedAuthority> roles;
 
         WebsiteUser(String emailAddress,
-                    String firstName,
+                    String firstName, String lastName,
                     String userName,
                     String password,
                     Collection<String> authorities,
                     Collection<String> roles) {
             this.emailAddress = emailAddress;
             this.firstName = firstName;
+            this.lastName = lastName;
             this.userName = userName;
             this.password = password;
             this.authorities = authorities.stream()

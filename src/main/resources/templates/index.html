@@ -16,15 +16,12 @@
         {
           "imports": {
             "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
-            "axios": "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js",
+            "axios": "https://cdn.jsdelivr.net/npm/axios@1.7.3/+esm",
             "tabulator": "https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator_esm.min.js",
-            "ld": "https://cdn.jsdelivr.net/npm/launchdarkly-vue-client-sdk@2.2.2/+esm",
-            "ldjs": "https://cdn.jsdelivr.net/npm/launchdarkly-js-client-sdk@3.4.0/dist/ldclient.min.js"
+            "ld": "https://cdn.jsdelivr.net/npm/launchdarkly-js-client-sdk@3.4.0/+esm"
           }
         }
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
@@ -80,9 +77,10 @@
 
     import {createApp, ref} from 'vue';
     import {TabulatorFull as Tabulator} from 'tabulator';
-    import * as LaunchDarkly from 'ldjs';
+    import * as LDClient from 'ld';
+    import axios from 'axios';
 
-    const instance = axios.create({
+    const instance = axios.default.create({
         baseURL: '/api/olympics/',
         timeout: 1000,
         withCredentials: true,
@@ -96,7 +94,7 @@
             return {
                 ldReady: false,
                 ldFlag: false,
-                version: 1,
+                version: 0,
             }
         },
         watch: {
@@ -105,11 +103,37 @@
             },
             ldFlag(newVal, oldVal) {
                 console.log("LD FLAG CHANGE STATE", newVal, oldVal);
-                this.version = 2
+                this.version = newVal ? 2 : 1
             },
             version(newVal, oldVal) {
                 console.log('version change from ', oldVal, newVal);
-                if (newVal === 2) {
+                if (newVal === 1) {
+                    let table = new Tabulator("#medal-table", {
+                        height: 650,
+                        layout: "fitColumns",
+                        pagination: false,
+                        columns: [
+                            {title: "Year", field: "olympicYear", width: 150, sorter: "number"},
+                            {title: "City", field: "city"},
+                            {title: "Sport", field: "sport"},
+                            {title: "Discipline", field: "discipline"},
+                            {title: "Athlete", field: "athlete"},
+                            {title: "Country", field: "country"},
+                            {title: "Gender", field: "gender"},
+                            {title: "Event", field: "event"},
+                            {title: "Medal", field: "medal"},
+                        ],
+                    });
+                    instance
+                        .get('/results')
+                        .then(response => {
+                            //this.items = response.data;
+                            table.setData(response.data);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching data:', error);
+                        });
+                } else if (newVal === 2) {
                     new Tabulator("#medal-table", {
                         height: 650,
                         layout: "fitColumns",
@@ -141,7 +165,7 @@
         },
         mounted() {
             console.log('mounted section here')
-
+            this.version = 1
             instance
                 .get('/ldContext')
                 .then(response => {
@@ -155,38 +179,14 @@
                         this.ldFlag = ldClient.variation('feature-olympic-pagination', false);
                         console.log('setting flag', this.ldFlag)
                     });
+                    ldClient.on('change:feature-olympic-pagination', (value, previous) => {
+                        console.log('feature-olympic-pagination changed:', value, '(' + previous + ')');
+                        this.ldFlag = value
+                    });
                 })
                 .catch(error => {
                     console.error('Error fetching ldContext:', error);
                 });
-
-            if (this.version === 1) {
-                let table = new Tabulator("#medal-table", {
-                    height: 650,
-                    layout: "fitColumns",
-                    pagination: false,
-                    columns: [
-                        {title: "Year", field: "olympicYear", width: 150, sorter: "number"},
-                        {title: "City", field: "city"},
-                        {title: "Sport", field: "sport"},
-                        {title: "Discipline", field: "discipline"},
-                        {title: "Athlete", field: "athlete"},
-                        {title: "Country", field: "country"},
-                        {title: "Gender", field: "gender"},
-                        {title: "Event", field: "event"},
-                        {title: "Medal", field: "medal"},
-                    ],
-                });
-                instance
-                    .get('/results')
-                    .then(response => {
-                        //this.items = response.data;
-                        table.setData(response.data);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching data:', error);
-                    });
-            }
         }
     }).mount('#app');
 
