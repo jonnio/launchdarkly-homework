@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en" data-bs-theme="light"
-      xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
@@ -19,7 +18,8 @@
             "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
             "axios": "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js",
             "tabulator": "https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator_esm.min.js",
-            "ld": "https://cdn.jsdelivr.net/npm/launchdarkly-vue-client-sdk@2.2.2/dist/launchdarkly-vue-client-sdk.es.js"
+            "ld": "https://cdn.jsdelivr.net/npm/launchdarkly-vue-client-sdk@2.2.2/+esm",
+            "ldjs": "https://cdn.jsdelivr.net/npm/launchdarkly-js-client-sdk@3.4.0/dist/ldclient.min.js"
           }
         }
     </script>
@@ -56,7 +56,8 @@
                     </div>
                 </a>
                 <a sec:authorize="isAuthenticated()" class="nav-link" href="logout" tabindex="-1" aria-disabled="true">Logout</a>
-                <a sec:authorize="!isAuthenticated()" class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Logout</a>
+                <a sec:authorize="!isAuthenticated()" class="nav-link disabled" href="#" tabindex="-1"
+                   aria-disabled="true">Logout</a>
             </div>
         </div>
     </div>
@@ -65,14 +66,13 @@
 <div class="container-fluid">
     <h3>Olympic Results</h3>
     <p>See the results for each competition since 1896</p>
-    <div th:text="${#authorization}"></div>
-    <div th:text="${#authentication}"></div>
-    <div th:text="${#authority}"></div>
-    <div th:text="${#authentication?.principal}"></div>
+
     <div id="app">
 
         <div id="medal-table" class="table table-light"></div>
 
+        <div v-if="ldReady">... content that uses LaunchDarkly ...</div>
+        <div v-else>LaunchDarkly client initializing...</div>
     </div>
 
 </div>
@@ -80,24 +80,7 @@
 
     import {createApp, ref} from 'vue';
     import {TabulatorFull as Tabulator} from 'tabulator';
-    import {LDPlugin, useLDFlag, useLDReady, ldInit} from 'ld';
-
-    // // Set clientSideID to your LaunchDarkly client-side ID
-    // const clientSideID = '66b36d56cd98fb104ad0ad8b'
-    //
-    // // Set up the context properties. This context should appear on your LaunchDarkly
-    // // contexts dashboard soon after you run the demo.
-    // const context = {kind: 'user', key: 'feature-olympic-pagination', name: 'Joseph'}
-    //
-    // // Set featureFlagKey to the feature flag key you want to evaluate
-    // const featureFlagKey = 'feature-olympic-pagination'
-    //
-    // if (!clientSideID) {
-    //     console.warn('Please edit App.vue to set clientSideID to your LaunchDarkly client-side ID')
-    // }
-    // const [ldReady] = ldInit({clientSideID, context})
-    // const flagValue = useLDFlag(featureFlagKey, false)
-
+    import * as LaunchDarkly from 'ldjs';
 
     const instance = axios.create({
         baseURL: '/api/olympics/',
@@ -106,21 +89,78 @@
     });
 
     createApp({
-        setup() {
-            const msg = ref('Hello vue & [[${ message }]]')
-            return {
-                msg
-            }
+        setup(props) {
+            console.log('setup section here')
         },
         data() {
             return {
-                items: []
-            };
+                ldReady: false,
+                ldFlag: false,
+                version: 1,
+            }
+        },
+        watch: {
+            ldReady(newVal, oldVal) {
+                console.log("LD READY CHANGE STATE", newVal, oldVal);
+            },
+            ldFlag(newVal, oldVal) {
+                console.log("LD FLAG CHANGE STATE", newVal, oldVal);
+                this.version = 2
+            },
+            version(newVal, oldVal) {
+                console.log('version change from ', oldVal, newVal);
+                if (newVal === 2) {
+                    new Tabulator("#medal-table", {
+                        height: 650,
+                        layout: "fitColumns",
+                        pagination: true,
+                        paginationMode: "remote",
+                        sortMode: "remote",
+                        ajaxURL: "/api/olympics/paged/results",
+                        dataReceiveParams: {
+                            "last_page": "totalPages",
+                            "data": "content",
+                        },
+                        ajaxURLGenerator: function (url, config, params) {
+                            return url + "?params=" + encodeURI(JSON.stringify(params)); //encode parameters as a json object
+                        },
+                        columns: [
+                            {title: "Year", field: "olympicYear", width: 150, sorter: "number"},
+                            {title: "City", field: "city"},
+                            {title: "Sport", field: "sport"},
+                            {title: "Discipline", field: "discipline"},
+                            {title: "Athlete", field: "athlete"},
+                            {title: "Country", field: "country"},
+                            {title: "Gender", field: "gender"},
+                            {title: "Event", field: "event"},
+                            {title: "Medal", field: "medal"},
+                        ],
+                    });
+                }
+            }
         },
         mounted() {
-            // use LD here
-            let version = 2
-            if (version === 1) {
+            console.log('mounted section here')
+
+            instance
+                .get('/ldContext')
+                .then(response => {
+                    console.log('ldContext:', response.data);
+
+                    const ldClient = LDClient.initialize('66b36d56cd98fb104ad0ad8c', response.data);
+                    ldClient.on('ready', () => {
+                        // flag values available
+                        console.log('ld client ready')
+                        this.ldReady = ref(true)
+                        this.ldFlag = ldClient.variation('feature-olympic-pagination', false);
+                        console.log('setting flag', this.ldFlag)
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching ldContext:', error);
+                });
+
+            if (this.version === 1) {
                 let table = new Tabulator("#medal-table", {
                     height: 650,
                     layout: "fitColumns",
@@ -146,38 +186,9 @@
                     .catch(error => {
                         console.error('Error fetching data:', error);
                     });
-            } else if (version === 2) {
-                let table = new Tabulator("#medal-table", {
-                    height: 650,
-                    layout: "fitColumns",
-                    pagination: true,
-                    paginationMode: "remote",
-                    sortMode: "remote",
-                    ajaxURL: "/api/olympics/paged/results",
-                    dataReceiveParams: {
-                        "last_page": "totalPages",
-                        "data": "content",
-                    },
-                    ajaxURLGenerator: function (url, config, params) {
-                        return url + "?params=" + encodeURI(JSON.stringify(params)); //encode parameters as a json object
-                    },
-                    columns: [
-                        {title: "Year", field: "olympicYear", width: 150, sorter: "number"},
-                        {title: "City", field: "city"},
-                        {title: "Sport", field: "sport"},
-                        {title: "Discipline", field: "discipline"},
-                        {title: "Athlete", field: "athlete"},
-                        {title: "Country", field: "country"},
-                        {title: "Gender", field: "gender"},
-                        {title: "Event", field: "event"},
-                        {title: "Medal", field: "medal"},
-                    ],
-                });
             }
         }
-    })
-        .use(LDPlugin, {clientSideID: 'client-side-id-123abc', deferInitialization: true})
-        .mount('#app');
+    }).mount('#app');
 
 
 </script>

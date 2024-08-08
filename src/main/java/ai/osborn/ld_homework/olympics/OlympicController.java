@@ -1,5 +1,6 @@
 package ai.osborn.ld_homework.olympics;
 
+import ai.osborn.ld_homework.LaunchDarklyConfiguration;
 import com.launchdarkly.sdk.server.LDClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.Principal;
 import java.util.List;
 
-import static ai.osborn.ld_homework.LaunchDarklyConfiguration.fromPrincipal;
+import static ai.osborn.ld_homework.LaunchDarklyConfiguration.toLDContext;
+import static ai.osborn.ld_homework.LaunchDarklyConfiguration.toLaunchDarklyContext;
 
 @RestController
 @RequestMapping("/api/olympics")
@@ -42,7 +44,7 @@ public class OlympicController {
                                                               @RequestParam TabulatorParamsModel params) {
         logger.debug("paging params {}", params);
 
-        var context = fromPrincipal(principal);
+        var context = toLDContext(principal);
 
         var variation = ldClient.boolVariation("feature-olympic-pagination", context, false);
         if (!variation) {
@@ -57,6 +59,11 @@ public class OlympicController {
 
         return new TabulatorPagedModel<>(olympicResultPagingRepository
                 .findAll(PageRequest.of(params.getPage(), params.getSize(), sort)));
+    }
+
+    @GetMapping("/ldContext")
+    public LaunchDarklyConfiguration.LaunchDarklyContext getLaunchDarklyContext(Principal principal) {
+        return toLaunchDarklyContext(principal);
     }
 
 }
