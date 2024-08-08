@@ -135,6 +135,7 @@ ldcli config --set access-token api-c66f6280-cda1-4149-9c44-6db333b9ac15
 The token presented here will be removed after the evaluation period.
 
 ## Part 1: Release and Remediate
+* Make sure the flag `feature-olympic-pagination` is disabled
 * [Login](http://localhost:8080) to the application using the user `samone`. The user will be presented with a table of medals that has scrolling but no pagination. A user can simply sort by a column and scroll. 
 * Enable the pagination feature and note that the screen updates with a pageable table interface.
 ```shell
@@ -163,12 +164,12 @@ A rule is configured such that any user with the role `QA_TESTER` will have pagi
 * [Login](http://localhost:8080) as `surfer` or `samone` to see the pagination ([logout](http://localhost:8080/logout))
 * [Login](http://localhost:8080) as `jojo` to see that pagination is not enabled ([logout](http://localhost:8080/logout))
 
-### Extra Credit: Experimentation
+## Extra Credit: Experimentation
 I've added an experiment that tracks the clicks on the pagination buttons. The experiment uses a css filter to
 track clicks on the buttons. Some sample results are in this screen shot:
 ![image](src/main/resources/static/experiment.png)
 
-### Extra Credit: Integrations
+## Extra Credit: Integrations
 I created an integration between `LaunchDarkly` and my `GCP` account via `pub/sub` to store the events for
 future analytics and reporting. (screenshot pending enablement of integrations)
 
