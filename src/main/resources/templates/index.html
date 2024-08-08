@@ -134,7 +134,7 @@
                             console.error('Error fetching data:', error);
                         });
                 } else if (newVal === 2) {
-                    new Tabulator("#medal-table", {
+                    const table = new Tabulator("#medal-table", {
                         height: 650,
                         layout: "fitColumns",
                         pagination: true,
@@ -159,6 +159,9 @@
                             {title: "Event", field: "event"},
                             {title: "Medal", field: "medal"},
                         ],
+                    });
+                    table.on("pageLoaded", function(pageno){
+                        console.log('paged to page #', pageno);
                     });
                 }
             }

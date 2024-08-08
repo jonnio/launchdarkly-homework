@@ -60,3 +60,12 @@ environment variable.
 ## Testing
 
 ### Running
+
+
+
+## CLI
+`ldcli flags --project default --environment production --flag feature-olympic-pagination toggle-off |jq -r '{name, kind, key, on: .environments.production.on}'`
+`ldcli flags --project default --environment production --flag feature-olympic-pagination toggle-on |jq -r '{name, kind, key, on: .environments.production.on}'`
+
+
+
